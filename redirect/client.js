@@ -16,9 +16,9 @@
         }
 
         return new Promise((resolve, reject) => {
-            Evergage.cashDom("body").css("visibility", "hidden");
+            SalesforceInteractions.cashDom("body").css("visibility", "hidden");
 
-            Evergage.sendStat({
+            SalesforceInteractions.mcis.sendStat({
                 campaignStats: [
                     {
                         control: false,

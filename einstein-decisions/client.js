@@ -12,7 +12,7 @@
     function apply(context, template) {
         if (!context.contentZone || !context.imageUrl || !context.url) return;
 
-        const contentZoneSelector = Evergage.getContentZoneSelector(context.contentZone);
+        const contentZoneSelector = SalesforceInteractions.mcis.getContentZoneSelector(context.contentZone);
 
         /**
          * The pageElementLoaded method waits for the content zone to load into the DOM
@@ -24,28 +24,28 @@
          * Visit the Template Display Utilities documentation to learn more:
          * https://developer.evergage.com/campaign-development/web-templates/web-display-utilities
          */
-        return Evergage.DisplayUtils
+        return SalesforceInteractions.DisplayUtils
             .bind(buildBindId(context))
             .pageElementLoaded(contentZoneSelector)
             .then((element) => {
                 const html = template(context);
-                Evergage.cashDom(element).html(html);
+                SalesforceInteractions.cashDom(element).html(html);
             });
     }
 
     function reset(context, template) {
-        Evergage.DisplayUtils.unbind(buildBindId(context));
-        Evergage.cashDom(`[data-evg-campaign-id="${context.campaign}"][data-evg-experience-id="${context.experience}"]`)
+        SalesforceInteractions.DisplayUtils.unbind(buildBindId(context));
+        SalesforceInteractions.cashDom(`[data-evg-campaign-id="${context.campaign}"][data-evg-experience-id="${context.experience}"]`)
             .remove();
     }
 
     function control(context) {
-        const contentZoneSelector = Evergage.getContentZoneSelector(context.contentZone);
-        return Evergage.DisplayUtils
+        const contentZoneSelector = SalesforceInteractions.mcis.getContentZoneSelector(context.contentZone);
+        return SalesforceInteractions.DisplayUtils
             .bind(buildBindId(context))
             .pageElementLoaded(contentZoneSelector)
             .then((element) => {
-                Evergage.cashDom(element).attr({
+                SalesforceInteractions.cashDom(element).attr({
                     "data-evg-campaign-id": context.campaign,
                     "data-evg-experience-id": context.experience,
                     "data-evg-user-group": context.userGroup

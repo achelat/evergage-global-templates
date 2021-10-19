@@ -14,8 +14,8 @@
      * @description Add click listener to the "X" button that removes the template from the DOM.
      */
     function setDismissal() {
-        Evergage.cashDom("#evg-slide-in-with-cta .evg-btn-dismissal").on("click", () => {
-            Evergage.cashDom("#evg-slide-in-with-cta").remove();
+        SalesforceInteractions.cashDom("#evg-slide-in-with-cta .evg-btn-dismissal").on("click", () => {
+            SalesforceInteractions.cashDom("#evg-slide-in-with-cta").remove();
         });
     }
 
@@ -26,7 +26,7 @@
      */
     function handleTemplateContent({ context, template }) {
         const html = template(context);
-        Evergage.cashDom("body").append(html);
+        SalesforceInteractions.cashDom("body").append(html);
         setDismissal();
     }
 
@@ -51,7 +51,7 @@
                     }, triggerOptionsNumber);
                 });
             case "scrollDepth":
-                return Evergage.DisplayUtils
+                return SalesforceInteractions.DisplayUtils
                     .bind(buildBindId(context))
                     .pageScroll(triggerOptionsNumber)
                     .then((event) => {
@@ -60,7 +60,7 @@
                         handleTemplateContent({ context, template });
                     });
             case "inactivity":
-                return Evergage.DisplayUtils
+                return SalesforceInteractions.DisplayUtils
                     .bind(buildBindId(context))
                     .pageInactive(triggerOptionsNumber)
                     .then((event) => {
@@ -72,14 +72,14 @@
     }
 
     function apply(context, template) {
-        if (Evergage.cashDom("#evg-slide-in-with-cta").length > 0) return;
+        if (SalesforceInteractions.cashDom("#evg-slide-in-with-cta").length > 0) return;
 
         return handleTriggerEvent({ context, template });
     }
 
     function reset(context, template) {
-        Evergage.DisplayUtils.unbind(buildBindId(context));
-        Evergage.cashDom("#evg-slide-in-with-cta").remove();
+        SalesforceInteractions.DisplayUtils.unbind(buildBindId(context));
+        SalesforceInteractions.cashDom("#evg-slide-in-with-cta").remove();
     }
 
     function control(context) {
