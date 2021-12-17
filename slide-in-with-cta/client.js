@@ -79,7 +79,8 @@
 
     function reset(context, template) {
         SalesforceInteractions.DisplayUtils.unbind(buildBindId(context));
-        SalesforceInteractions.cashDom("#evg-slide-in-with-cta").remove();
+        SalesforceInteractions.cashDom(`[data-evg-campaign-id="${context.campaign}"][data-evg-experience-id="${context.experience}"]`)
+            .remove();
     }
 
     function control(context) {

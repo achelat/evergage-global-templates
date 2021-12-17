@@ -30,6 +30,7 @@
                 `).removeAttr("data-evg-dismissal");
                 SalesforceInteractions.sendEvent({
                     user: {
+                        action: "Exit Intent Email Capture",
                         attributes: {
                             emailAddress: emailAddress
                         }
