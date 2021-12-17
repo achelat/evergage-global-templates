@@ -29,8 +29,10 @@
                     #evg-exit-intent-popup-email-capture .evg-btn-dismissal
                 `).removeAttr("data-evg-dismissal");
                 SalesforceInteractions.sendEvent({
+                    interaction: {
+                        name: "Exit Intent Email Capture"
+                    },
                     user: {
-                        action: "Exit Intent Email Capture",
                         attributes: {
                             emailAddress: emailAddress
                         }
