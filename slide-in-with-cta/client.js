@@ -44,9 +44,9 @@
             case "timeOnPage":
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
-                        if (userGroup === "Control") return true;
-
-                        handleTemplateContent({ context, template });
+                        if (userGroup !== "Control") {
+                            handleTemplateContent({ context, template });
+                        }
                         resolve(true);
                     }, triggerOptionsNumber);
                 });
