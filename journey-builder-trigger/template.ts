@@ -2,15 +2,15 @@ import { RecommendationsConfig, RecipeReferenceLookup, RecipeReference, recommen
 import { UserAttributeLookup, UserAttributeReference, UserSegmentLookup, UserSegmentReference } from "common";
 
 export class JourneyBuilderTriggerUtils {
-    static defaultCatalogObject = "Product";
-    static defaultCatalogObjectAttributes = ["id", "name", "imageUrl", "url", "price"];
-    static maxRecommendations = 8;
+    static DEFAULT_CATALOG_OBJECT = "Product";
+    static DEFAULT_CATALOG_OBJECT_ATTRIBUTES = ["id", "name", "imageUrl", "url", "price"];
+    static MAX_RECOMMENDATIONS = 8;
 
     // ================================== Catalog Localization =====================================
     // If you use catalog localization and would like to receive localized catalog data
-    // in Marketing Cloud, change the value of 'isCatalogLocalized' to true.
+    // in Marketing Cloud, change the value of 'IS_CATALOG_LOCALIZED' to true.
     // =============================================================================================
-    static isCatalogLocalized = false;
+    static IS_CATALOG_LOCALIZED = false;
 
     static getFlatItems(context: CampaignComponentContext, catalogObject: string, ids: string[]): any[] {
         const locale: string = context.locale || "";
@@ -18,8 +18,8 @@ export class JourneyBuilderTriggerUtils {
         return context.services.catalog
             .findItems(catalogObject, ids)
             .map(item => item.toFlatJSON(
-                JourneyBuilderTriggerUtils.defaultCatalogObjectAttributes,
-                JourneyBuilderTriggerUtils.isCatalogLocalized ? locale : null
+                JourneyBuilderTriggerUtils.DEFAULT_CATALOG_OBJECT_ATTRIBUTES,
+                JourneyBuilderTriggerUtils.IS_CATALOG_LOCALIZED ? locale : null
             ));
     }
 
@@ -40,23 +40,25 @@ export class JourneyBuilderTriggerUtils {
     static getRecommendations(recipe: RecipeReference, context: CampaignComponentContext) {
         let result = [];
 
-        if (recipe) {
-            const recipeConfig = new RecommendationsConfig();
-            recipeConfig.maxResults = JourneyBuilderTriggerUtils.maxRecommendations;
-            recipeConfig.recipe = recipe;
-
-            try {
-                if (recipeConfig?.recipe?.id) {
-                        const recs = recommend(context, recipeConfig).map(i => i.id);
-                        result = JourneyBuilderTriggerUtils.getFlatItems(context, recipeConfig.itemType, recs);
-                }
-
-                return JSON.stringify(result);
-
-            } catch(ex){}
+        if (!recipe) {
+            return "[]";
         }
 
-        return JSON.stringify(result);
+        const recipeConfig = new RecommendationsConfig();
+        recipeConfig.maxResults = JourneyBuilderTriggerUtils.MAX_RECOMMENDATIONS;
+        recipeConfig.recipe = recipe;
+
+        try {
+            if (recipeConfig?.recipe?.id) {
+                    const recs = recommend(context, recipeConfig).map(i => i.id);
+                    result = JourneyBuilderTriggerUtils.getFlatItems(context, recipeConfig.itemType, recs);
+            }
+
+            return JSON.stringify(result);
+
+        } catch(ex) {
+            return "[]";
+        }
     }
 
     static getTriggerContext(context: CampaignComponentContext): any {
@@ -110,7 +112,7 @@ export class JourneyBuilderTriggerPayload {
     @header("Recommendations")
     @headerSubtitle(`After you select a recipe, create a Recommendations field in the event data extension in
         Marketing Cloud. Doing so allows you to add a Recommendations block to an email in Marketing Cloud.`)
-    @lookupOptions(() => new RecipeReferenceLookup(JourneyBuilderTriggerUtils.defaultCatalogObject))
+    @lookupOptions(() => new RecipeReferenceLookup(JourneyBuilderTriggerUtils.DEFAULT_CATALOG_OBJECT))
     recipe: RecipeReference;
 
     @title("Include Additional Recommendations")
@@ -120,7 +122,7 @@ export class JourneyBuilderTriggerPayload {
 
     @title(" ")
     @shownIf(this, self => self.includeAdditionalRecommendations)
-    @lookupOptions(() => new RecipeReferenceLookup(JourneyBuilderTriggerUtils.defaultCatalogObject))
+    @lookupOptions(() => new RecipeReferenceLookup(JourneyBuilderTriggerUtils.DEFAULT_CATALOG_OBJECT))
     additionalRecipe: RecipeReference;
 
     @title("Include User Segments")
