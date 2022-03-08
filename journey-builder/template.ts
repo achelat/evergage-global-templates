@@ -94,7 +94,7 @@ class Utils {
 class JourneyBuilderPayload {
     @title(" ")
     @header("User Attributes:")
-    @headerSubtitle("After you make your selections, create a field for each user attribute in the event data extension in Marketing Cloud. Data extension field names must match user attribute names.")
+    @headerSubtitle("After you select user attributes, create a field for each user attribute in the event data extension in Marketing Cloud. Data extension field names must match user attribute names.")
     @lookupOptions(() => new UserAttributeLookup())
     attributes: UserAttributeReference[];
 
@@ -105,7 +105,7 @@ class JourneyBuilderPayload {
     recipe: RecipeReference;
 
     @title("Include Additional Recommendations")
-    @subtitle("After you select a recipe, create an Additional_Recommendations field in the event data extension in Marketing Cloud. This action allows you to add an Additional Recommendations block to an email in Marketing Cloud.")
+    @subtitle("After you select a recipe, create an Additional_Recommendations field in the event data extension in Marketing Cloud. Doing so allows you to add an Additional Recommendations block to an email in Marketing Cloud.")
     includeAdditionalRecommendations: boolean = false;
 
     @title(" ")
