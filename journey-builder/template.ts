@@ -152,7 +152,7 @@ class JourneyBuilderPayload {
 export class JourneyBuilderTemplate implements CampaignTemplateComponent {
     @title(" ")
     @header("Optional Settings")
-    @headerSubtitle("By default, the trigger includes the ContactKey and Trigger_Type fields. Depending on the trigger type, it also can include Trigger_Segment, Trigger_Action, and Trigger_Catalog_Items fields. To store this data in Marketing Cloud, create these fields in your Marketing Cloud data extension. Select any of the following optional settings so your developer can use the data in the Journey for this campaign. For the data from the options you select to be available in Journey Builder, create the fields in the Marketing Cloud Data Extension.")
+    @headerSubtitle("By default, the trigger includes the ContactKey and Trigger_Type fields. Depending on the trigger type, it could also include Trigger_Segment, Trigger_Action, and Trigger_Catalog_Items fields. Create these fields in your Marketing Cloud data extension in order to store the data in Marketing Cloud. Select any of the following optional settings so your developer can use the data in the Journey for this campaign. For the data from the options you select to be available in Journey Builder, create the fields in the Marketing Cloud Data Extension.")
     templateConfig: JourneyBuilderPayload = new JourneyBuilderPayload();
 
     run(context: CampaignComponentContext) {
