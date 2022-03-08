@@ -100,7 +100,7 @@ class JourneyBuilderPayload {
 
     @title(" ")
     @header("Recommendations:")
-    @headerSubtitle("After you select a recipe, create a Recommendations field in the event data extension in Marketing Cloud. This action allows you to add a Recommendations block to an email in Marketing Cloud.")
+    @headerSubtitle("After you select a recipe, create a Recommendations field in the event data extension in Marketing Cloud. Doing so allows you to add a Recommendations block to an email in Marketing Cloud.")
     @lookupOptions(() => new RecipeReferenceLookup(Utils.defaultCatalogObject))
     recipe: RecipeReference;
 
