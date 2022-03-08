@@ -1,6 +1,6 @@
 ### Journey Builder
 
-When used in a Trigger Campaign, this Server-Side global template returns a Trigger_Type field. Depending on the trigger type, it could also include Trigger_Segment, Trigger_Action, and Trigger_Catalog_Items fields along with other information chosen by the Campaign Developer.
+When used in a Trigger Campaign, this global template returns a Trigger_Type field. Depending on the trigger type, it could also include Trigger_Segment, Trigger_Action, and Trigger_Catalog_Items fields along with other information chosen by the Campaign Developer.
 
 #### Configuration:
 
