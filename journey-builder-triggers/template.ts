@@ -1,7 +1,7 @@
 import { RecommendationsConfig, RecipeReferenceLookup, RecipeReference, recommend } from "recs";
 import { UserAttributeLookup, UserAttributeReference, UserSegmentLookup, UserSegmentReference } from "common";
 
-class Utils {
+export class JourneyBuilderTriggersUtils {
     static defaultCatalogObject = "Product";
     static defaultCatalogObjectAttributes = ["id", "name", "imageUrl", "url", "price"];
     static maxRecommendations = 8;
@@ -17,7 +17,7 @@ class Utils {
 
         return context.services.catalog
             .findItems(catalogObject, ids)
-            .map(item => item.toFlatJSON(Utils.defaultCatalogObjectAttributes, Utils.isCatalogLocalized ? locale : null));
+            .map(item => item.toFlatJSON(JourneyBuilderTriggersUtils.defaultCatalogObjectAttributes, JourneyBuilderTriggersUtils.isCatalogLocalized ? locale : null));
     }
 
     static getUserAttributeValue(attributeId: string, user: User) {
@@ -37,13 +37,13 @@ class Utils {
 
         if (recipe) {
             const recipeConfig = new RecommendationsConfig();
-            recipeConfig.maxResults = Utils.maxRecommendations;
+            recipeConfig.maxResults = JourneyBuilderTriggersUtils.maxRecommendations;
             recipeConfig.recipe = recipe;
 
             try {
                 if (recipeConfig?.recipe?.id) {
                         const recs = recommend(context, recipeConfig).map(i => i.id);
-                        result = Utils.getFlatItems(context, recipeConfig.itemType, recs);
+                        result = JourneyBuilderTriggersUtils.getFlatItems(context, recipeConfig.itemType, recs);
                 }
 
                 return JSON.stringify(result);
@@ -76,7 +76,7 @@ class Utils {
 
                     if(trigger.itemIdsByType){
                         Object.keys(trigger.itemIdsByType).forEach(catalogObject => {
-                            items.push(...Utils.getFlatItems(context, catalogObject, trigger.itemIdsByType[catalogObject]));
+                            items.push(...JourneyBuilderTriggersUtils.getFlatItems(context, catalogObject, trigger.itemIdsByType[catalogObject]));
                         });
                     }
 
@@ -91,7 +91,7 @@ class Utils {
     }
 }
 
-class JourneyBuilderPayload {
+export class JourneyBuilderTriggersPayload {
     @title(" ")
     @header("User Attributes:")
     @headerSubtitle("After you select user attributes, create a field for each user attribute in the event data extension in Marketing Cloud. Data extension field names must match user attribute names.")
@@ -101,7 +101,7 @@ class JourneyBuilderPayload {
     @title(" ")
     @header("Recommendations:")
     @headerSubtitle("After you select a recipe, create a Recommendations field in the event data extension in Marketing Cloud. Doing so allows you to add a Recommendations block to an email in Marketing Cloud.")
-    @lookupOptions(() => new RecipeReferenceLookup(Utils.defaultCatalogObject))
+    @lookupOptions(() => new RecipeReferenceLookup(JourneyBuilderTriggersUtils.defaultCatalogObject))
     recipe: RecipeReference;
 
     @title("Include Additional Recommendations")
@@ -110,7 +110,7 @@ class JourneyBuilderPayload {
 
     @title(" ")
     @shownIf(this, self => self.includeAdditionalRecommendations)
-    @lookupOptions(() => new RecipeReferenceLookup(Utils.defaultCatalogObject))
+    @lookupOptions(() => new RecipeReferenceLookup(JourneyBuilderTriggersUtils.defaultCatalogObject))
     additionalRecipe: RecipeReference;
 
     @title("Include User Segments")
@@ -123,7 +123,7 @@ class JourneyBuilderPayload {
     segments: UserSegmentReference[];
 
     getPayload(context: CampaignComponentContext){
-        const triggerContext = Utils.getTriggerContext(context);
+        const triggerContext = JourneyBuilderTriggersUtils.getTriggerContext(context);
         
         const result = {
             "Campaign": context.campaignId,
@@ -132,28 +132,28 @@ class JourneyBuilderPayload {
         };
 
         this.attributes?.forEach(attr => {
-            result[attr.id] = Utils.getUserAttributeValue(attr.id, context.user);
+            result[attr.id] = JourneyBuilderTriggersUtils.getUserAttributeValue(attr.id, context.user);
         });
         
         if (this.includeSegments) {
-            result["Segments"] = Utils.getUserSegments(this.segments, context.user);
+            result["Segments"] = JourneyBuilderTriggersUtils.getUserSegments(this.segments, context.user);
         }
 
         if (this.includeAdditionalRecommendations) {
-            result["Additional_Recommendations"] = Utils.getRecommendations(this.additionalRecipe, context);
+            result["Additional_Recommendations"] = JourneyBuilderTriggersUtils.getRecommendations(this.additionalRecipe, context);
         }
 
-        result["Recommendations"] = Utils.getRecommendations(this.recipe, context);
+        result["Recommendations"] = JourneyBuilderTriggersUtils.getRecommendations(this.recipe, context);
 
         return result;
     }
 }
 
-export class JourneyBuilderTemplate implements CampaignTemplateComponent {
+export class JourneyBuilderTriggersTemplate implements CampaignTemplateComponent {
     @title(" ")
     @header("Optional Settings")
     @headerSubtitle("By default, the trigger includes the ContactKey and Trigger_Type fields. Depending on the trigger type, it could also include Trigger_Segment, Trigger_Action, and Trigger_Catalog_Items fields. Create these fields in your Marketing Cloud data extension in order to store the data in Marketing Cloud. Select any of the following optional settings so your developer can use the data in the Journey for this campaign. For the data from the options you select to be available in Journey Builder, create the fields in the Marketing Cloud Data Extension.")
-    templateConfig: JourneyBuilderPayload = new JourneyBuilderPayload();
+    templateConfig: JourneyBuilderTriggersPayload = new JourneyBuilderTriggersPayload();
 
     run(context: CampaignComponentContext) {
         return this.templateConfig.getPayload(context);
