@@ -2,5 +2,6 @@
     "name" : "Infobar With User Attribute and Call-To-Action",
     "description" : "",
     "imageUrl" : null,
-    "category" : null
-  }
+    "category" : null,
+    "channel" : "Web"
+}
