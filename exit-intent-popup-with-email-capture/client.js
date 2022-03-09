@@ -18,17 +18,20 @@
      * an event to Interaction Studio to set the emailAddress attribute to the user email address.
      */
     function setConfirmationPanel() {
-        Evergage.cashDom("#evg-exit-intent-popup-email-capture .evg-cta").on("click", () => {
-            const emailAddress = Evergage.cashDom(".evg-form input[placeholder='Email']").val();
+        SalesforceInteractions.cashDom("#evg-exit-intent-popup-email-capture .evg-cta").on("click", () => {
+            const emailAddress = SalesforceInteractions.cashDom(".evg-form input[placeholder='Email']").val();
             const regex = RegExp(/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]+)$/);
             if (emailAddress && regex.test(emailAddress)) {
-                Evergage.cashDom("#evg-exit-intent-popup-email-capture .evg-main-panel").addClass("evg-hide");
-                Evergage.cashDom("#evg-exit-intent-popup-email-capture .evg-confirm-panel").removeClass("evg-hide");
-                Evergage.cashDom(`
+                SalesforceInteractions.cashDom("#evg-exit-intent-popup-email-capture .evg-main-panel").addClass("evg-hide");
+                SalesforceInteractions.cashDom("#evg-exit-intent-popup-email-capture .evg-confirm-panel").removeClass("evg-hide");
+                SalesforceInteractions.cashDom(`
                     #evg-exit-intent-popup-email-capture .evg-overlay,
                     #evg-exit-intent-popup-email-capture .evg-btn-dismissal
                 `).removeAttr("data-evg-dismissal");
-                Evergage.sendEvent({
+                SalesforceInteractions.sendEvent({
+                    interaction: {
+                        name: "Exit Intent Email Capture"
+                    },
                     user: {
                         attributes: {
                             emailAddress: emailAddress
@@ -36,7 +39,7 @@
                     }
                 });
             } else {
-                Evergage.cashDom("#evg-exit-intent-popup-email-capture .evg-error-msg")
+                SalesforceInteractions.cashDom("#evg-exit-intent-popup-email-capture .evg-error-msg")
                     .removeClass("evg-hide")
                     .addClass("evg-error");
             }
@@ -56,8 +59,8 @@
             #evg-exit-intent-popup-email-capture .evg-opt-out-msg
         `;
 
-        Evergage.cashDom(dismissSelectors).on("click", () => {
-            Evergage.cashDom("#evg-exit-intent-popup-email-capture").remove();
+        SalesforceInteractions.cashDom(dismissSelectors).on("click", () => {
+            SalesforceInteractions.cashDom("#evg-exit-intent-popup-email-capture").remove();
         });
     }
 
@@ -71,26 +74,26 @@
          * Visit the Template Display Utilities documentation to learn more:
          * https://developer.evergage.com/campaign-development/web-templates/web-display-utilities
          */
-        return Evergage.DisplayUtils
+        return SalesforceInteractions.DisplayUtils
             .bind(buildBindId(context))
             .pageExit(pageExitMillis)
             .then(() => {
-                if (Evergage.cashDom("#evg-exit-intent-popup").length > 0) return;
+                if (SalesforceInteractions.cashDom("#evg-exit-intent-popup").length > 0) return;
 
                 const html = template(context);
-                Evergage.cashDom("body").append(html);
+                SalesforceInteractions.cashDom("body").append(html);
                 setConfirmationPanel();
                 setDismissal(context);
             });
     }
 
     function reset(context, template) {
-        Evergage.DisplayUtils.unbind(buildBindId(context));
-        Evergage.cashDom("#evg-exit-intent-popup-email-capture").remove();
+        SalesforceInteractions.DisplayUtils.unbind(buildBindId(context));
+        SalesforceInteractions.cashDom("#evg-exit-intent-popup-email-capture").remove();
     }
 
     function control(context) {
-        return Evergage.DisplayUtils
+        return SalesforceInteractions.DisplayUtils
             .bind(buildBindId(context))
             .pageExit(pageExitMillis)
             .then(() => {
