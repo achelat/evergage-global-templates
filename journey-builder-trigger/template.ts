@@ -17,7 +17,7 @@ export class JourneyBuilderTriggerUtils {
 
         return context.services.catalog
             .findItems(catalogObject, ids)
-            .map(item => item.toFlatJSON(
+            .map((item) => item.toFlatJSON(
                 JourneyBuilderTriggerUtils.DEFAULT_CATALOG_OBJECT_ATTRIBUTES,
                 JourneyBuilderTriggerUtils.IS_CATALOG_LOCALIZED ? locale : null
             ));
@@ -29,10 +29,10 @@ export class JourneyBuilderTriggerUtils {
 
     static getUserSegments(segments: UserSegmentReference[], user: User) {
         if (segments?.length && user?.segmentMembership?.length) {
-            const selectedSegments: string[] = segments.map(s => s.id);
+            const selectedSegments: string[] = segments.map((s) => s.id);
             return user.segmentMembership
-                .filter(sm => selectedSegments.includes(sm.segmentId))
-                .map(sm => sm.segmentName).join(",");
+                .filter((sm) => selectedSegments.includes(sm.segmentId))
+                .map((sm) => sm.segmentName).join(",");
         }
         return "";
     }
@@ -40,25 +40,22 @@ export class JourneyBuilderTriggerUtils {
     static getRecommendations(recipe: RecipeReference, context: CampaignComponentContext) {
         let result = [];
 
-        if (!recipe) {
-            return "[]";
+        if (recipe) {
+            const recipeConfig = new RecommendationsConfig();
+            recipeConfig.maxResults = JourneyBuilderTriggerUtils.MAX_RECOMMENDATIONS;
+            recipeConfig.recipe = recipe;
+            if (recipeConfig?.recipe?.id) {
+                const recs = recommend(context, recipeConfig).map((i) => i.id);
+                result = JourneyBuilderTriggerUtils.getFlatItems(context, recipeConfig.itemType, recs);
+            }
         }
-
-        const recipeConfig = new RecommendationsConfig();
-        recipeConfig.maxResults = JourneyBuilderTriggerUtils.MAX_RECOMMENDATIONS;
-        recipeConfig.recipe = recipe;
 
         try {
-            if (recipeConfig?.recipe?.id) {
-                    const recs = recommend(context, recipeConfig).map(i => i.id);
-                    result = JourneyBuilderTriggerUtils.getFlatItems(context, recipeConfig.itemType, recs);
-            }
-
             return JSON.stringify(result);
-
-        } catch(ex) {
-            return "[]";
+        } catch (ex) {
+            return "[]"
         }
+
     }
 
     static getTriggerContext(context: CampaignComponentContext): any {
@@ -82,7 +79,7 @@ export class JourneyBuilderTriggerUtils {
                     const items: any[] = [];
 
                     if (trigger.itemIdsByType) {
-                        Object.keys(trigger.itemIdsByType).forEach(catalogObject => {
+                        Object.keys(trigger.itemIdsByType).forEach((catalogObject) => {
                             items.push(...JourneyBuilderTriggerUtils.getFlatItems(
                                 context, catalogObject, trigger.itemIdsByType[catalogObject]
                             ));
@@ -121,7 +118,7 @@ export class JourneyBuilderTriggerPayload {
     includeAdditionalRecommendations: boolean = false;
 
     @title(" ")
-    @shownIf(this, self => self.includeAdditionalRecommendations)
+    @shownIf(this, (self) => self.includeAdditionalRecommendations)
     @lookupOptions(() => new RecipeReferenceLookup(JourneyBuilderTriggerUtils.DEFAULT_CATALOG_OBJECT))
     additionalRecipe: RecipeReference;
 
@@ -131,7 +128,7 @@ export class JourneyBuilderTriggerPayload {
     includeSegments: boolean = false;
 
     @title(" ")
-    @shownIf(this, self => self.includeSegments)
+    @shownIf(this, (self) => self.includeSegments)
     @lookupOptions(() => new UserSegmentLookup())
     segments: UserSegmentReference[];
 
@@ -144,7 +141,7 @@ export class JourneyBuilderTriggerPayload {
             ...triggerContext
         };
 
-        this.attributes?.forEach(attr => {
+        this.attributes?.forEach((attr) => {
             result[attr.id] = JourneyBuilderTriggerUtils.getUserAttributeValue(attr.id, context.user);
         });
         
@@ -154,7 +151,7 @@ export class JourneyBuilderTriggerPayload {
 
         if (this.includeAdditionalRecommendations) {
             result["Additional_Recommendations"] =
-                JourneyBuilderTriggersUtils.getRecommendations(this.additionalRecipe, context);
+                JourneyBuilderTriggerUtils.getRecommendations(this.additionalRecipe, context);
         }
 
         result["Recommendations"] = JourneyBuilderTriggerUtils.getRecommendations(this.recipe, context);
