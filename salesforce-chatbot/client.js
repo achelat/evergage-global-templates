@@ -63,40 +63,42 @@
     }
 
     function apply(context, template) {
-
         return new Promise((resolve, reject) => {
-
             SalesforceInteractions.mcis.sendStat({
-                campaignStats: [
-                    {
-                        control: false,
-                        experienceId: context.experience,
-                        stat: "Impression"
-                    }
-                ]
+                campaignStats: [{
+                    control: false,
+                    experienceId: context.experience,
+                    stat: "Impression"
+                }]
             });
-            handleTriggerEvent({ context, template })
-                .then(() => {
-                    Evergage.DisplayUtils
-                        .bind(buildBindId(context))
-                        .pageElementLoaded("embeddedservice-chat-header")
-                        .then(() => {
-                            //Add click listener to the "X" button that removes the chatbot from the DOM.
-                            SalesforceInteractions.cashDom("embeddedservice-chat-header")
-                                .find(".closeButton")
-                                .on("click", () => {
-                                    SalesforceInteractions.mcis.sendStat({
-                                        campaignStats: [
-                                            {
-                                                control: false,
-                                                experienceId: context.experience,
-                                                stat: "Dismissal"
-                                            }
-                                        ]
-                                    });
-                                });
+
+            handleTriggerEvent({ context, template }).then(() => {
+                Evergage.DisplayUtils
+                    .bind(buildBindId(context))
+                    .pageElementLoaded("embeddedservice-chat-header")
+                    .then(() => {
+                        //Add click listener to the "X" button that removes the chatbot from the DOM.
+                        SalesforceInteractions.cashDom("embeddedservice-chat-header").find(".closeButton").on("click", () => {
+                            SalesforceInteractions.mcis.sendStat({
+                                campaignStats: [{
+                                    control: false,
+                                    experienceId: context.experience,
+                                    stat: "Dismissal"
+                                }]
+                            });
                         });
-                });
+                    }).then(() => {
+                        SalesforceInteractions.cashDom(".startButton").on("click", () => {
+                            SalesforceInteractions.mcis.sendStat({
+                                campaignStats: [{
+                                    control: false,
+                                    experienceId: context.experience,
+                                    stat: "Clickthrough"
+                                }]
+                            });
+                        });
+                    });
+            });
         });
     }
 
