@@ -11,12 +11,12 @@
 
 
     /**
-     * @function handleChatbot
+     * @function openChatbot
      * @param {Object} context
      * @description calls a function 'embedded_svc.inviteAPI.inviteButton.acceptInvite();'
      * to activate the chatbot session
      */
-    function handleChatbot({ context, template }) {
+    function openChatbot({ context }) {
         embedded_svc.inviteAPI.inviteButton.acceptInvite();
     }
 
@@ -25,7 +25,7 @@
      * @param {Object} context
      * @description Create trigger event based on context
      */
-    function handleTriggerEvent({ context, template }) {
+    function handleTriggerEvent({ context }) {
         if (!context.contentZone) return;
 
         const { userGroup, triggerOptions, triggerOptionsNumber } = context || {};
@@ -37,32 +37,23 @@
                     setTimeout(() => {
                         if (userGroup === "Control") return true;
 
-                        handleChatbot({ context, template });
+                        openChatbot({ context });
                         resolve(true);
                     }, triggerOptionsNumber);
                 });
-            case "scrollDepth":
-                return SalesforceInteractions.DisplayUtils
-                    .bind(buildBindId(context))
-                    .pageScroll(triggerOptionsNumber)
-                    .then((event) => {
-                        if (userGroup === "Control") return true;
-
-                        handleChatbot({ context, template });
-                    });
             case "inactivity":
                 return SalesforceInteractions.DisplayUtils
                     .bind(buildBindId(context))
                     .pageInactive(triggerOptionsNumber)
-                    .then((event) => {
+                    .then(() => {
                         if (userGroup === "Control") return true;
 
-                        handleChatbot({ context, template });
+                        openChatbot({ context });
                     });
         }
     }
 
-    function apply(context, template) {
+    function apply(context) {
         return new Promise((resolve, reject) => {
             SalesforceInteractions.mcis.sendStat({
                 campaignStats: [{
@@ -71,14 +62,15 @@
                     stat: "Impression"
                 }]
             });
-
-            handleTriggerEvent({ context, template }).then(() => {
-                Evergage.DisplayUtils
-                    .bind(buildBindId(context))
-                    .pageElementLoaded("embeddedservice-chat-header")
-                    .then(() => {
-                        //Add click listener to the "X" button that removes the chatbot from the DOM.
-                        SalesforceInteractions.cashDom("embeddedservice-chat-header").find(".closeButton").on("click", () => {
+            handleTriggerEvent({ context });
+            Evergage.DisplayUtils
+                .bind(buildBindId(context))
+                .pageElementLoaded("embeddedservice-chat-header")
+                .then(() => {
+                    //Add click listener to the "X" button that removes the chatbot from the DOM.
+                    SalesforceInteractions.cashDom("embeddedservice-chat-header")
+                        .find(".closeButton")
+                        .on("click", () => {
                             SalesforceInteractions.mcis.sendStat({
                                 campaignStats: [{
                                     control: false,
@@ -87,8 +79,12 @@
                                 }]
                             });
                         });
-                    }).then(() => {
-                        SalesforceInteractions.cashDom(".startButton").on("click", () => {
+                }).then(() => {
+                    const inputFirstName = SalesforceInteractions.cashDom("#FirstName");
+                    const inputLastName = SalesforceInteractions.cashDom("#LastName");
+
+                    SalesforceInteractions.cashDom(".startButton").on("click", () => {
+                        if (inputFirstName.val().length && inputLastName.val().length > 0) {
                             SalesforceInteractions.mcis.sendStat({
                                 campaignStats: [{
                                     control: false,
@@ -96,19 +92,21 @@
                                     stat: "Clickthrough"
                                 }]
                             });
-                        });
+                        }
                     });
-            });
+                });
         });
     }
 
-    function reset(context, template) {
+    function reset(context) {
         SalesforceInteractions.DisplayUtils.unbind(buildBindId(context));
         SalesforceInteractions.cashDom("embeddedservice-chat-header").remove();
+        SalesforceInteractions.cashDom(".closeButton").remove();
+        SalesforceInteractions.cashDom(".startButton").remove();
     }
 
     function control(context) {
-        return handleTriggerEvent({ context });
+        return handleTriggerEvent({ context })
     }
 
     registerTemplate({
