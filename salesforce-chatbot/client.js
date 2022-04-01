@@ -50,7 +50,7 @@
                 }).then(() => {
                     const inputFirstName = SalesforceInteractions.cashDom("#FirstName");
                     const inputLastName = SalesforceInteractions.cashDom("#LastName");
-
+                    //Attaches a listener to the Start Chatting button
                     SalesforceInteractions.cashDom(".startButton").on("click", () => {
                         if (inputFirstName.val().length && inputLastName.val().length > 0) {
                             SalesforceInteractions.mcis.sendStat({
@@ -65,7 +65,7 @@
                 });
         });
     }
-
+    //Control stats for chatbot
     function sendChatbotControlStats({ context }) {
         return new Promise(() => {
             SalesforceInteractions.mcis.sendStat({
