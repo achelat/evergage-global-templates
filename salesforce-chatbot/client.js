@@ -68,13 +68,6 @@
     //Control stats for chatbot
     function sendChatbotControlStats({ context }) {
         return new Promise(() => {
-            SalesforceInteractions.mcis.sendStat({
-                campaignStats: [{
-                    control: true,
-                    experienceId: context.experience,
-                    stat: "Impression"
-                }]
-            })
             SalesforceInteractions.DisplayUtils
                 .bind(buildBindId(context))
                 .pageElementLoaded("embeddedservice-chat-header")
