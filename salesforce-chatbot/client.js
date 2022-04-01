@@ -50,12 +50,56 @@
                 }).then(() => {
                     const inputFirstName = SalesforceInteractions.cashDom("#FirstName");
                     const inputLastName = SalesforceInteractions.cashDom("#LastName");
-                    //Attaches a listener to the Start Chatting button
+
                     SalesforceInteractions.cashDom(".startButton").on("click", () => {
                         if (inputFirstName.val().length && inputLastName.val().length > 0) {
                             SalesforceInteractions.mcis.sendStat({
                                 campaignStats: [{
                                     control: false,
+                                    experienceId: context.experience,
+                                    stat: "Clickthrough"
+                                }]
+                            });
+                        }
+                    });
+                });
+        });
+    }
+
+    function sendChatbotControlStats({ context }) {
+        return new Promise(() => {
+            SalesforceInteractions.mcis.sendStat({
+                campaignStats: [{
+                    control: true,
+                    experienceId: context.experience,
+                    stat: "Impression"
+                }]
+            })
+            SalesforceInteractions.DisplayUtils
+                .bind(buildBindId(context))
+                .pageElementLoaded("embeddedservice-chat-header")
+                .then(() => {
+                    //Add click listener to the "X" button that removes the chatbot from the DOM.
+                    SalesforceInteractions.cashDom("embeddedservice-chat-header")
+                        .find(".closeButton")
+                        .on("click", () => {
+                            SalesforceInteractions.mcis.sendStat({
+                                campaignStats: [{
+                                    control: true,
+                                    experienceId: context.experience,
+                                    stat: "Dismissal"
+                                }]
+                            });
+                        });
+                }).then(() => {
+                    const inputFirstName = SalesforceInteractions.cashDom("#FirstName");
+                    const inputLastName = SalesforceInteractions.cashDom("#LastName");
+
+                    SalesforceInteractions.cashDom(".startButton").on("click", () => {
+                        if (inputFirstName.val().length && inputLastName.val().length > 0) {
+                            SalesforceInteractions.mcis.sendStat({
+                                campaignStats: [{
+                                    control: true,
                                     experienceId: context.experience,
                                     stat: "Clickthrough"
                                 }]
@@ -82,10 +126,13 @@
             case "timeOnPage":
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
-                        if (userGroup === "Control") return true;
-
-                        openChatbot();
-                        sendChatbotStats({ context });
+                        if (userGroup !== "Control") {
+                            openChatbot();
+                            sendChatbotStats({ context });
+                        }
+                        if (userGroup === "Control") {
+                            sendChatbotControlStats({ context });
+                        }
                         resolve(true);
                     }, triggerOptionsNumber);
                 });
@@ -94,10 +141,13 @@
                     .bind(buildBindId(context))
                     .pageInactive(triggerOptionsNumber)
                     .then(() => {
-                        if (userGroup === "Control") return true;
-
-                        openChatbot();
-                        sendChatbotStats({ context });
+                        if (userGroup !== "Control") {
+                            openChatbot();
+                            sendChatbotStats({ context });
+                        }
+                        if (userGroup === "Control") {
+                            sendChatbotControlStats({ context });
+                        }
                     });
         }
     }
