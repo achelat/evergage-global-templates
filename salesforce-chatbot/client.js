@@ -1,5 +1,11 @@
 (function () {
 
+    const CHATBOT_SELECTORS = {
+        ChatHeader: "embeddedservice-chat-header",
+        CloseButton: "embeddedservice-chat-header .closeButton",
+        StartButton: ".embeddedServiceSidebarFeature .startButton"
+    };
+
     /**
      * @function buildBindId
      * @param {Object} context
@@ -8,7 +14,6 @@
     function buildBindId(context) {
         return `${context.campaign}:${context.experience}`;
     }
-
 
     /**
      * @function openChatbot
@@ -22,87 +27,44 @@
         }
     }
 
+    function sendStatOfType({ context, statType }) {
+        SalesforceInteractions.mcis.sendStat({
+            campaignStats: [{
+                control: context.userGroup === "Control",
+                experienceId: context.experience,
+                stat: statType
+            }]
+        });
+    }
+
+    function bindCloseButtonClick({ context }) {
+        SalesforceInteractions.cashDom(CHATBOT_SELECTORS.CloseButton).on("click", () => {
+            sendStatOfType({ context, statType: "Dismissal" });
+        });
+    }
+
+    function bindStartButtonClick({ context }) {
+        SalesforceInteractions.cashDom(CHATBOT_SELECTORS.StartButton).on("click", () => {
+            const inputFirstName = SalesforceInteractions.cashDom("#FirstName");
+            const inputLastName = SalesforceInteractions.cashDom("#LastName");
+
+            if (inputFirstName.val().length && inputLastName.val().length > 0) {
+                sendStatOfType({ context, statType: "Clickthrough" });
+            }
+        });
+    }
+
     function sendChatbotStats({ context }) {
-        return new Promise(() => {
-            SalesforceInteractions.mcis.sendStat({
-                campaignStats: [{
-                    control: false,
-                    experienceId: context.experience,
-                    stat: "Impression"
-                }]
-            })
-            SalesforceInteractions.DisplayUtils
-                .bind(buildBindId(context))
-                .pageElementLoaded("embeddedservice-chat-header")
-                .then(() => {
-                    //Add click listener to the "X" button that removes the chatbot from the DOM.
-                    SalesforceInteractions.cashDom("embeddedservice-chat-header")
-                        .find(".closeButton")
-                        .on("click", () => {
-                            SalesforceInteractions.mcis.sendStat({
-                                campaignStats: [{
-                                    control: false,
-                                    experienceId: context.experience,
-                                    stat: "Dismissal"
-                                }]
-                            });
-                        });
-                }).then(() => {
-                    const inputFirstName = SalesforceInteractions.cashDom("#FirstName");
-                    const inputLastName = SalesforceInteractions.cashDom("#LastName");
-                    //Attaches a listener to the Start Chatting button
-                    SalesforceInteractions.cashDom(".startButton").on("click", () => {
-                        if (inputFirstName.val().length && inputLastName.val().length > 0) {
-                            SalesforceInteractions.mcis.sendStat({
-                                campaignStats: [{
-                                    control: false,
-                                    experienceId: context.experience,
-                                    stat: "Clickthrough"
-                                }]
-                            });
-                        }
-                    });
-                });
-        });
-    }
-    //Control stats for chatbot
-    function sendChatbotControlStats({ context }) {
-        return new Promise(() => {
-            SalesforceInteractions.DisplayUtils
-                .bind(buildBindId(context))
-                .pageElementLoaded("embeddedservice-chat-header")
-                .then(() => {
-                    //Add click listener to the "X" button that removes the chatbot from the DOM.
-                    SalesforceInteractions.cashDom("embeddedservice-chat-header")
-                        .find(".closeButton")
-                        .on("click", () => {
-                            SalesforceInteractions.mcis.sendStat({
-                                campaignStats: [{
-                                    control: true,
-                                    experienceId: context.experience,
-                                    stat: "Dismissal"
-                                }]
-                            });
-                        });
-                }).then(() => {
-                    const inputFirstName = SalesforceInteractions.cashDom("#FirstName");
-                    const inputLastName = SalesforceInteractions.cashDom("#LastName");
+        return SalesforceInteractions.DisplayUtils
+            .bind(buildBindId(context))
+            .pageElementLoaded(CHATBOT_SELECTORS.ChatHeader)
+            .then(() => {
+                sendStatOfType({ context, statType: "Impression" });
 
-                    SalesforceInteractions.cashDom(".startButton").on("click", () => {
-                        if (inputFirstName.val().length && inputLastName.val().length > 0) {
-                            SalesforceInteractions.mcis.sendStat({
-                                campaignStats: [{
-                                    control: true,
-                                    experienceId: context.experience,
-                                    stat: "Clickthrough"
-                                }]
-                            });
-                        }
-                    });
-                });
-        });
+                bindCloseButtonClick({ context });
+                bindStartButtonClick({ context });
+            });
     }
-
 
     /**
      * @function handleTriggerEvent
@@ -114,18 +76,14 @@
 
         const { userGroup, triggerOptions, triggerOptionsNumber } = context || {};
 
-
         switch (triggerOptions.name) {
             case "timeOnPage":
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
                         if (userGroup !== "Control") {
                             openChatbot();
-                            sendChatbotStats({ context });
                         }
-                        if (userGroup === "Control") {
-                            sendChatbotControlStats({ context });
-                        }
+                        sendChatbotStats({ context });
                         resolve(true);
                     }, triggerOptionsNumber);
                 });
@@ -136,29 +94,39 @@
                     .then(() => {
                         if (userGroup !== "Control") {
                             openChatbot();
-                            sendChatbotStats({ context });
                         }
-                        if (userGroup === "Control") {
-                            sendChatbotControlStats({ context });
-                        }
+                        sendChatbotStats({ context });
                     });
         }
     }
 
-    function apply(context) {
-        return handleTriggerEvent({ context });
+    function handleChatBotWhenTrue(context) {
+        const predicate = () => typeof (((window.embedded_svc || {}).inviteAPI || {}).inviteButton || {}).acceptInvite === "function";
 
+        return SalesforceInteractions.util.resolveWhenTrue
+            .bind(predicate, buildBindId(context), 5000, 100)
+            .then(() => {
+                console.log('context before handleTriggerEvent: ', context);
+                return handleTriggerEvent({ context });
+            })
+            .catch((e) => {
+                console.error('Error in `apply`: ', e);
+            });
+    }
+
+    function apply(context) {
+        if (SalesforceInteractions.cashDom(CHATBOT_SELECTORS.ChatHeader).length > 0) return;
+
+        return handleChatBotWhenTrue(context);
     }
 
     function reset(context) {
         SalesforceInteractions.DisplayUtils.unbind(buildBindId(context));
-        SalesforceInteractions.cashDom("embeddedservice-chat-header").remove();
-        SalesforceInteractions.cashDom(".closeButton").remove();
-        SalesforceInteractions.cashDom(".startButton").remove();
+        SalesforceInteractions.cashDom(`${CHATBOT_SELECTORS.ChatHeader}, ${CHATBOT_SELECTORS.CloseButton}, ${CHATBOT_SELECTORS.StartButton}`).remove();
     }
 
     function control(context) {
-        return handleTriggerEvent({ context })
+        return handleChatBotWhenTrue(context);
     }
 
     registerTemplate({
