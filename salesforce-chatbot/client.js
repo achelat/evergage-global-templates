@@ -1,10 +1,11 @@
 (function () {
 
-    const CHATBOT_SELECTORS = {
-        ChatHeader: "embeddedservice-chat-header",
-        CloseButton: "embeddedservice-chat-header .closeButton",
-        StartButton: ".embeddedServiceSidebarFeature .startButton"
+    const BIND_IDS = {
+        Base: null,
+        ChatBot: null
     };
+
+    const mainFormContainerSelector = ".embeddedServiceSidebar .showDockableContainer .formContent";
 
     /**
      * @function buildBindId
@@ -16,17 +17,34 @@
     }
 
     /**
-     * @function openChatbot
+     * @function buildChatBotBindIds
      * @param {Object} context
-     * @description calls a function 'embedded_svc.inviteAPI.inviteButton.acceptInvite();'
-     * to activate the chatbot session
+     * @description Build unique bind IDs for different util calls
      */
-    function openChatbot() {
-        if (embedded_svc) {
-            embedded_svc.inviteAPI.inviteButton.acceptInvite();
-        }
+    function buildChatBotBindIds(context) {
+        const baseId = buildBindId(context);
+        Object.assign(BIND_IDS, {
+            Base: baseId,
+            ChatBot: `${baseId}:chatbot`
+        });
     }
 
+    /**
+     * @function openChatbot
+     * @description Call the function 'embedded_svc.inviteAPI.inviteButton.acceptInvite();' to activate
+     * the chatbot session
+     */
+    function openChatBot() {
+        embedded_svc.inviteAPI.inviteButton.acceptInvite();
+    }
+
+    /**
+     * @function sendStatOfType
+     * @param {Object} obj
+     * @param {Object} obj.context
+     * @param {string} obj.statType
+     * @description Abstract wrapper for `SalesforceInteractions.mcis.sendStat`
+     */
     function sendStatOfType({ context, statType }) {
         SalesforceInteractions.mcis.sendStat({
             campaignStats: [{
@@ -37,32 +55,18 @@
         });
     }
 
-    function bindCloseButtonClick({ context }) {
-        SalesforceInteractions.cashDom(CHATBOT_SELECTORS.CloseButton).on("click", () => {
-            sendStatOfType({ context, statType: "Dismissal" });
-        });
-    }
-
-    function bindStartButtonClick({ context }) {
-        SalesforceInteractions.cashDom(CHATBOT_SELECTORS.StartButton).on("click", () => {
-            const inputFirstName = SalesforceInteractions.cashDom("#FirstName");
-            const inputLastName = SalesforceInteractions.cashDom("#LastName");
-
-            if (inputFirstName.val().length && inputLastName.val().length > 0) {
-                sendStatOfType({ context, statType: "Clickthrough" });
-            }
-        });
-    }
-
-    function sendChatbotStats({ context }) {
+    /**
+     * @function initStatTracking
+     * @param {Object} context
+     * @description Initialize stat tracking based on presence of main chatbot element
+     */
+    function initStatTracking(context) {
         return SalesforceInteractions.DisplayUtils
-            .bind(buildBindId(context))
-            .pageElementLoaded(CHATBOT_SELECTORS.ChatHeader)
-            .then(() => {
+            .bind(BIND_IDS.ChatBot)
+            .pageElementLoaded(mainFormContainerSelector)
+            .then((element) => {
                 sendStatOfType({ context, statType: "Impression" });
-
-                bindCloseButtonClick({ context });
-                bindStartButtonClick({ context });
+                return element;
             });
     }
 
@@ -71,61 +75,63 @@
      * @param {Object} context
      * @description Create trigger event based on context
      */
-    function handleTriggerEvent({ context }) {
+    function handleTriggerEvent(context) {
         if (!context.contentZone) return;
 
-        const { userGroup, triggerOptions, triggerOptionsNumber } = context || {};
+        const { triggerOptions, triggerOptionsNumber } = context || {};
 
         switch (triggerOptions.name) {
             case "timeOnPage":
-                return new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        if (userGroup !== "Control") {
-                            openChatbot();
-                        }
-                        sendChatbotStats({ context });
-                        resolve(true);
-                    }, triggerOptionsNumber);
-                });
+                return new Promise((resolve) => {
+                    setTimeout(() => resolve(true), triggerOptionsNumber);
+                })
+                .then(() => initStatTracking(context));
             case "inactivity":
                 return SalesforceInteractions.DisplayUtils
-                    .bind(buildBindId(context))
+                    .bind(BIND_IDS.Base)
                     .pageInactive(triggerOptionsNumber)
-                    .then(() => {
-                        if (userGroup !== "Control") {
-                            openChatbot();
-                        }
-                        sendChatbotStats({ context });
-                    });
+                    .then(() => initStatTracking(context));
         }
     }
 
+    /**
+     * @function handleChatBotWhenTrue
+     * @param {Object} context
+     * @description Open chatbot when ready, then initialize trigger event setup
+     */
     function handleChatBotWhenTrue(context) {
         const predicate = () => typeof (((window.embedded_svc || {}).inviteAPI || {}).inviteButton || {}).acceptInvite === "function";
 
         return SalesforceInteractions.util.resolveWhenTrue
-            .bind(predicate, buildBindId(context), 5000, 100)
+            .bind(predicate, BIND_IDS.Base, 30000, 100)
             .then(() => {
-                console.log('context before handleTriggerEvent: ', context);
-                return handleTriggerEvent({ context });
+                if (context.userGroup !== "Control") {
+                    openChatBot();
+                }
+                return context;
             })
             .catch((e) => {
-                console.error('Error in `apply`: ', e);
+                SalesforceInteractions.sendException(e, `Error caught in 'handleChatBotWhenTrue' from Salesforce Chatbot Template`);
+            })
+            .then(() => {
+                return handleTriggerEvent(context);
             });
     }
 
     function apply(context) {
-        if (SalesforceInteractions.cashDom(CHATBOT_SELECTORS.ChatHeader).length > 0) return;
-
+        buildChatBotBindIds(context);
         return handleChatBotWhenTrue(context);
     }
 
     function reset(context) {
-        SalesforceInteractions.DisplayUtils.unbind(buildBindId(context));
-        SalesforceInteractions.cashDom(`${CHATBOT_SELECTORS.ChatHeader}, ${CHATBOT_SELECTORS.CloseButton}, ${CHATBOT_SELECTORS.StartButton}`).remove();
+        buildChatBotBindIds(context);
+        SalesforceInteractions.DisplayUtils.unbind(BIND_IDS.Base);
+        SalesforceInteractions.DisplayUtils.unbind(BIND_IDS.ChatBot);
+        SalesforceInteractions.cashDom(mainFormContainerSelector).remove();
     }
 
     function control(context) {
+        buildChatBotBindIds(context);
         return handleChatBotWhenTrue(context);
     }
 

@@ -1,7 +1,7 @@
 {
-  "name" : "Salesforce Chatbot",
-  "description" : "",
-  "imageUrl" : null,
-  "category" : null,
-  "channel" : "Web"
+    "name": "Salesforce Chatbot",
+    "description": "",
+    "imageUrl": null,
+    "category": null,
+    "channel": "Web"
 }

@@ -3,7 +3,6 @@ export class ChatbotTriggerOptions {
     label: string;
 }
 
-
 export class SalesforceChatbot implements CampaignTemplateComponent {
 
     @options([
@@ -28,7 +27,7 @@ export class SalesforceChatbot implements CampaignTemplateComponent {
     @subtitle("Second(s) of inactivity on page")
     secondsInactive: number = 0;
 
- 
+
     run(context: CampaignComponentContext) {
         switch (this.triggerOptions.name) {
             case "timeOnPage":
@@ -45,4 +44,3 @@ export class SalesforceChatbot implements CampaignTemplateComponent {
     }
 
 }
-

@@ -8,5 +8,6 @@ This global template interacts with the Salesforce Chatbot that is embedded on y
 
 <img src="config.png" alt="Salesforce Chatbot" width="680px"/>
 
-1. Content Zone
-2. Trigger Options
+1. Trigger Options
+    - Time on Page (Delay)
+    - Inactivity
