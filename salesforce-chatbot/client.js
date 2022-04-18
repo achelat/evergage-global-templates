@@ -35,7 +35,12 @@
      * the chatbot session
      */
     function openChatBot() {
-        embedded_svc.inviteAPI.inviteButton.acceptInvite();
+        try {
+            embedded_svc.inviteAPI.inviteButton.acceptInvite();
+        } catch (e) {
+            SalesforceInteractions.sendException(e, `Error caught in 'handleChatBotWhenTrue' from Salesforce Chatbot Template`);
+        }
+
     }
 
     /**
@@ -83,14 +88,26 @@
         switch (triggerOptions.name) {
             case "timeOnPage":
                 return new Promise((resolve) => {
-                    setTimeout(() => resolve(true), triggerOptionsNumber);
+                    setTimeout(() => {
+                        resolve(true);
+                    }, triggerOptionsNumber);
                 })
-                .then(() => initStatTracking(context));
+                .then(() => {
+                    if (context.userGroup !== "Control") {
+                        openChatBot();
+                    }
+                    return initStatTracking(context);
+                });
             case "inactivity":
                 return SalesforceInteractions.DisplayUtils
                     .bind(BIND_IDS.Base)
                     .pageInactive(triggerOptionsNumber)
-                    .then(() => initStatTracking(context));
+                    .then(() => {
+                        if (context.userGroup !== "Control") {
+                            openChatBot();
+                        }
+                        return initStatTracking(context);
+                    });
         }
     }
 
@@ -103,16 +120,7 @@
         const predicate = () => typeof (((window.embedded_svc || {}).inviteAPI || {}).inviteButton || {}).acceptInvite === "function";
 
         return SalesforceInteractions.util.resolveWhenTrue
-            .bind(predicate, BIND_IDS.Base, 30000, 100)
-            .then(() => {
-                if (context.userGroup !== "Control") {
-                    openChatBot();
-                }
-                return context;
-            })
-            .catch((e) => {
-                SalesforceInteractions.sendException(e, `Error caught in 'handleChatBotWhenTrue' from Salesforce Chatbot Template`);
-            })
+            .bind(predicate, BIND_IDS.Base, (1000 * 60 * 5), 500)
             .then(() => {
                 return handleTriggerEvent(context);
             });
