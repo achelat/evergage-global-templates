@@ -3,7 +3,7 @@ export class ChatbotTriggerOptions {
     label: string;
 }
 
-export class SalesforceChatbot implements CampaignTemplateComponent {
+export class SalesforceChatbotTemplate implements CampaignTemplateComponent {
 
     @options([
         {
