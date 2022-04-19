@@ -40,7 +40,6 @@
         } catch (e) {
             SalesforceInteractions.sendException(e, `Error caught in 'handleChatBotWhenTrue' from Salesforce Chatbot Template`);
         }
-
     }
 
     /**
