@@ -19,7 +19,7 @@
     /**
      * @function buildChatBotBindIds
      * @param {Object} context
-     * @description Build unique bind IDs for different util calls
+     * @description Build unique bind IDs and assign them to BIND_IDS for use in different util calls
      */
     function buildChatBotBindIds(context) {
         const baseId = buildBindId(context);
