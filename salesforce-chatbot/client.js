@@ -97,6 +97,16 @@
                     }
                     return initStatTracking(context);
                 });
+            case "scrollDepth":
+                return SalesforceInteractions.DisplayUtils
+                    .bind(buildBindId(context))
+                    .pageScroll(triggerOptionsNumber)
+                    .then(() => {
+                        if (context.userGroup !== "Control") {
+                            openChatBot();
+                        }
+                        return initStatTracking(context);
+                    });
             case "inactivity":
                 return SalesforceInteractions.DisplayUtils
                     .bind(BIND_IDS.Base)

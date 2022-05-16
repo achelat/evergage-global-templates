@@ -11,6 +11,10 @@ export class SalesforceChatbotTemplate implements CampaignTemplateComponent {
             label: "Time on Page (Delay)"
         },
         {
+            name: "scrollDepth",
+            label: "Scroll Depth"
+        },
+        {
             name: "inactivity",
             label: "Inactivity"
         }
@@ -21,6 +25,11 @@ export class SalesforceChatbotTemplate implements CampaignTemplateComponent {
     @title(" ")
     @subtitle("Second(s) on page")
     secondsOnPage: number = 0;
+
+    @shownIf(this, self => self.triggerOptions.name === "scrollDepth")
+    @title(" ")
+    @subtitle("% of page the user has scrolled")
+    percentageScrolled: number = 0;
 
     @shownIf(this, self => self.triggerOptions.name === "inactivity")
     @title(" ")
@@ -33,6 +42,10 @@ export class SalesforceChatbotTemplate implements CampaignTemplateComponent {
             case "timeOnPage":
                 return {
                     triggerOptionsNumber: this.secondsOnPage * 1000
+                };
+            case "scrollDepth":
+                return {
+                    triggerOptionsNumber: (this.percentageScrolled / 100)
                 };
             case "inactivity":
                 return {

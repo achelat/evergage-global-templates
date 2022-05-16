@@ -10,4 +10,5 @@ This global template interacts with the Salesforce Chatbot that is embedded on y
 
 1. Trigger Options
     - Time on Page (Delay)
+    - Scroll Depth
     - Inactivity
