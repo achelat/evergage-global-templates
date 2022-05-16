@@ -99,7 +99,7 @@
                 });
             case "scrollDepth":
                 return SalesforceInteractions.DisplayUtils
-                    .bind(buildBindId(context))
+                    .bind(BIND_IDS.Base)
                     .pageScroll(triggerOptionsNumber)
                     .then(() => {
                         if (context.userGroup !== "Control") {
