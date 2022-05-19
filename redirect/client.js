@@ -19,36 +19,37 @@
         const currentPage = window.location.hostname + window.location.pathname.replace(/\/$/, "");
         const targetPage = context.targetPageUrl.replace(/http(s)?\:\/\//, "");
         const redirectPage = context.redirectUrl.replace(/http(s)?\:\/\//, "");
-        return (context.targetPageUrl && context.redirectUrl) && (currentPage !== targetPage && currentPage === redirectPage);
+        return (targetPage && redirectPage) && (currentPage === redirectPage || currentPage !== targetPage);
     }
 
     /**
      * @function runTemplateExperience
      * @param {Object} context
      * @returns {Promise}
-     * @description Handle
+     * @description Return early if user is in the "Control" group. Otherwise, send impression stat and
+     * carry out the redirect.
      */
-    function runTemplateExperience(context) {
+     function runTemplateExperience(context) {
+        if (context.userGroup === "Control") {
+            return;
+        }
+
         return new Promise((resolve) => {
-            if (context.userGroup !== "Control") {
-                SalesforceInteractions.cashDom("body").css("visibility", "hidden");
+            SalesforceInteractions.cashDom("body").css("visibility", "hidden");
 
-                SalesforceInteractions.mcis.sendStat({
-                    campaignStats: [{
-                        control: context.userGroup === "Control",
-                        experienceId: context.experience,
-                        stat: "Impression"
-                    }]
-                });
+            SalesforceInteractions.mcis.sendStat({
+                campaignStats: [{
+                    control: context.userGroup === "Control",
+                    experienceId: context.experience,
+                    stat: "Impression"
+                }]
+            });
 
-                context.paramsForRedirect = (context.maintainQueryParams && window.location.href.match(/\?.*/))
-                    ? window.location.href.match(/\?.*/)[0]
-                    : "";
+            context.paramsForRedirect = (context.maintainQueryParams && window.location.href.match(/\?.*/))
+                ? window.location.href.match(/\?.*/)[0]
+                : "";
 
-                window.location.href = context.redirectUrl + context.paramsForRedirect;
-            } else {
-                resolve();
-            }
+            window.location.href = context.redirectUrl + context.paramsForRedirect;
         });
     }
 
