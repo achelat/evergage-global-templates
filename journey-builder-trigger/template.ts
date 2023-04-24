@@ -123,8 +123,7 @@ export class JourneyBuilderTriggerPayload {
     additionalRecipe: RecipeReference;
 
     @title("Include User Segments")
-    @subtitle(`After you select segments, create an Additional_Segment field in the event data extension in 
-        Marketing Cloud.`)
+    @subtitle(`After you select segments, create a Segments field in the event data extension in Marketing Cloud.`)
     includeSegments: boolean = false;
 
     @title(" ")
