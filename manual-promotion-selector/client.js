@@ -24,7 +24,7 @@
          * a second selector argument, which will be used as the observer element instead.
          *
          * Visit the Template Display Utilities documentation to learn more:
-         * https://developer.evergage.com/campaign-development/web-templates/web-display-utilities
+         * https://developer.salesforce.com/docs/marketing/personalization/guide/web-template-display-utilities.html
          */
         return SalesforceInteractions.DisplayUtils
             .bind(buildBindId(context))
